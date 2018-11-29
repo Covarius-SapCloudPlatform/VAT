@@ -1,0 +1,34 @@
+{ 
+    "exposed" : true,
+    "authentication" :
+          [
+                { "method" : "Form" }
+          ], 
+    "prevent_xsrf" : true,
+    "force_ssl" : true,
+    "rewrite_rules":[{
+           "source": "/COV_PKG_API/COV_API_VAT_STEPS/(.*)",
+           "target": "/COV_PKG_API/COV_API_VAT_STEPS.xsjs/$1"
+    },
+    {
+           "source": "/COV_PKG_API/COV_API_VAT_CONDITIONS/(.*)",
+           "target": "/COV_PKG_API/COV_API_VAT_CONDITIONS.xsjs/$1"
+    },
+        {
+           "source": "/COV_PKG_API/COV_API_VAT_MOVE_STEP/(.*)",
+           "target": "/COV_PKG_API/COV_API_VAT_MOVE_STEP.xsjs/$1"
+    },
+            {
+           "source": "/COV_PKG_API/COV_API_VAT_CLEAR_STEP/(.*)",
+           "target": "/COV_PKG_API/COV_API_VAT_CLEAR_STEP.xsjs/$1"
+    },
+    {
+           "source": "/COV_PKG_API/COV_API_VAT_FIELDS/(.*)",
+           "target": "/COV_PKG_API/COV_API_VAT_FIELDS.xsjs/$1"
+    },
+     {
+           "source": "/COV_PKG_API/COV_API_VAT_MAPPING/(.*)",
+           "target": "/COV_PKG_API/COV_API_VAT_MAPPING.xsjs/$1"
+    }],
+    "cache_control" : "private, no-cache, no-store, must-revalidate"
+}
