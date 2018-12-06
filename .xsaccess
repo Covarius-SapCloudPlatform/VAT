@@ -29,6 +29,10 @@
      {
            "source": "/COV_PKG_API/COV_API_VAT_MAPPING/(.*)",
            "target": "/COV_PKG_API/COV_API_VAT_MAPPING.xsjs/$1"
+    },
+     {
+           "source": "/COV_PKG_API/COV_API_VAT_RULE/(.*)",
+           "target": "/COV_PKG_API/COV_API_VAT_RULE.xsjs/$1"
     }],
     "cache_control" : "private, no-cache, no-store, must-revalidate"
 }

@@ -60,7 +60,7 @@
 				} catch (errorObj) {
 					gvTableUpdate = "Error during table insert:" + errorObj.message;
 				}
-			} 
+			}
 
 			$.response.status = 200;
 			$.response.setBody(JSON.stringify({
@@ -102,12 +102,20 @@
 				var record = {
 					IN_TABLE: oResultSet.getString(1),
 					IN_FIELD: oResultSet.getString(2),
-					IN_TABLE_ALIAS: oResultSet.getString(3),
-					OUT_TABLE: oResultSet.getString(4),
-					OUT_FIELD: oResultSet.getString(5),
-					OUT_TABLE_ALIAS: oResultSet.getString(6),
-					MANDATORY: oResultSet.getString(7),
-					RULE: oResultSet.getString(8)
+					IN_TABLE2: oResultSet.getString(3),
+					IN_FIELD2: oResultSet.getString(4),
+					IN_TABLE3: oResultSet.getString(5),
+					IN_FIELD3: oResultSet.getString(6),
+					IN_TABLE4: oResultSet.getString(7),
+					IN_FIELD4: oResultSet.getString(8),
+					IN_TABLE5: oResultSet.getString(9),
+					IN_FIELD5: oResultSet.getString(10),
+					IN_TABLE_ALIAS: oResultSet.getString(11),
+					OUT_TABLE: oResultSet.getString(12),
+					OUT_FIELD: oResultSet.getString(13),
+					OUT_TABLE_ALIAS: oResultSet.getString(14),
+					MANDATORY: oResultSet.getString(15),
+					RULE: oResultSet.getString(16)
 				};
 				oResult.records.push(record);
 				record = "";
@@ -145,29 +153,49 @@
 
 			//Build the Statement to insert the entries
 			var oStatement = oConnection.prepareStatement('INSERT INTO "' + gvSchemaName + '"."' + gvTableName +
-				'" VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
+				'" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
 
 			//Populate the fields with values from the incoming payload
 			//In Table
 			oStatement.setString(1, oBody.IN_TABLE);
 			//In Field
 			oStatement.setString(2, oBody.IN_FIELD);
+			//In Table 2
+			oStatement.setString(3, oBody.IN_TABLE2);
+			//In Field 2
+			oStatement.setString(4, oBody.IN_FIELD2);
+			//In Table 3
+			oStatement.setString(5, oBody.IN_TABLE3);
+			//In Field 3
+			oStatement.setString(6, oBody.IN_FIELD3);
+			//In Table 4
+			oStatement.setString(7, oBody.IN_TABLE4);
+			//In Field 4
+			oStatement.setString(8, oBody.IN_FIELD4);
+			//In Table 5
+			oStatement.setString(9, oBody.IN_TABLE5);
+			//In Field 5
+			oStatement.setString(10, oBody.IN_FIELD5);
 			//In Table Alias
-			oStatement.setString(3, oBody.IN_TABLE_ALIAS);
+			oStatement.setString(11, oBody.IN_TABLE_ALIAS);
 			//Out Table
-			oStatement.setString(4, oBody.OUT_TABLE);
+			oStatement.setString(12, oBody.OUT_TABLE);
 			//Out Field
-			oStatement.setString(5, oBody.OUT_FIELD);
+			oStatement.setString(13, oBody.OUT_FIELD);
 			//Out Table Alias
-			oStatement.setString(6, oBody.OUT_TABLE_ALIAS);
+			oStatement.setString(14, oBody.OUT_TABLE_ALIAS);
 			//Mandatory
 			if (oBody.MANDATORY) {
-				oStatement.setString(7, oBody.MANDATORY.toString());
+				oStatement.setString(15, oBody.MANDATORY.toString());
 			} else {
-				oStatement.setInt(7, 0);
+				oStatement.setInt(15, 0);
 			}
 			//Rule
-			oStatement.setString(8, oBody.RULE);
+			if (oBody.RULE) {
+				oStatement.setInt(16, parseFloat(oBody.RULE));
+			} else {
+				oStatement.setInt(16, 0);
+			}
 
 			//Add Batch process to executed on the database
 			oStatement.addBatch();
