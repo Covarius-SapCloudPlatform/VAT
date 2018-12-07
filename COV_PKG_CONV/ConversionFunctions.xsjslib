@@ -115,3 +115,40 @@ function VAT_LOOKUP(pValue, pTable) {
 
 	return lvResult;
 }
+
+// -------------------------------------------------------- // 
+// If Function-Returns the result after executing the logical   //
+// If statement                                             //
+// -------------------------------------------------------- //   
+function VAT_IF(pValue1, pOperator, pValue2, pTrue, pFalse) {
+	//Compare the Operator with the Value
+	if (_compare(pValue1, pOperator, pValue2)) {
+		return pTrue;
+	} else {
+		return pFalse;
+	}
+
+}
+
+function _compare(post, operator, value) {
+	switch (operator) {
+		case '>':
+			return post > value;
+		case '<':
+			return post < value;
+		case '>=':
+			return post >= value;
+		case '<=':
+			return post <= value;
+		case '==':
+			return post == value;
+		case '!=':
+			return post != value;
+		case '===':
+			return post === value;
+		case '!==':
+			return post !== value;
+		case '=':
+			return post === value;
+	}
+}

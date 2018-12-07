@@ -27,6 +27,7 @@
 	//Variables declaring the table details
 	var gvSchemaName = 'COV_SCH_VAT';
 	var gvTableName = 'COV_VAT_RULE';
+	var gvLogTableName = 'COV_VAT_RULE_LOG';
 
 	//Indicate if Service is to be updated or Deleted
 	var gvMethod = $.request.parameters.get('method');
@@ -85,6 +86,17 @@
 				$.response.setBody(JSON.stringify({
 					message: "API Called"
 				}));
+			} else if (gvMethod === "LOG") {
+				//Read Entries from the Table
+				try {
+					_getLogEntries();
+				} catch (errorObj) {
+					$.response.status = 200;
+					$.response.setBody(JSON.stringify({
+						message: "API Called",
+						result: gvErrorMessage
+					}));
+				}
 			} else {
 				//Read Entries from the Table
 				try {
@@ -131,8 +143,70 @@
 					PARAMETER3: oResultSet.getString(6),
 					PARAMETER4: oResultSet.getString(7),
 					PARAMETER5: oResultSet.getString(8),
-				// 	RESULT: oResultSet.getString(9),
-					RULE_STRING: oResultSet.getString(9)
+					// 	RESULT: oResultSet.getString(9),
+					RULE_STRING: oResultSet.getString(9),
+					FULL_RULE_STRING: oResultSet.getString(10)
+				};
+				oResult.records.push(record);
+				record = "";
+			}
+
+			oResultSet.close();
+			oStatement.close();
+			oConnection.close();
+
+			//Return the result
+			$.response.contentType = "application/json; charset=UTF-8";
+			$.response.setBody(JSON.stringify(oResult));
+			$.response.status = $.net.http.OK;
+
+		} catch (errorObj) {
+			gvErrorMessage = errorObj.message;
+			if (oStatement !== null) {
+				oStatement.close();
+			}
+			if (oConnection !== null) {
+				oConnection.close();
+			}
+		}
+	}
+
+	// -------------------------------------------------------- // 
+	// Function to read entries from the log table 				    //
+	// -------------------------------------------------------- //
+	function _getLogEntries() {
+		try {
+			//Variable to keep query statement 
+			var lvQuery = 'SELECT * FROM "' + gvSchemaName + '"."' + gvLogTableName + '"';
+
+			//Check if ID is specified then restrict the selection
+			if (gvId) {
+				lvQuery = lvQuery + ' WHERE "ID" = ' + "'" + gvId + "'";
+			}
+
+			//Connect to the Database and execute the query
+			var oConnection = $.db.getConnection();
+			var oStatement = oConnection.prepareStatement(lvQuery);
+			oStatement.execute();
+			var oResultSet = oStatement.getResultSet();
+			var oResult = {
+				records: []
+			};
+			while (oResultSet.next()) {
+
+				var record = {
+					MESSAGE_GUID: oResultSet.getString(1),
+					ID: oResultSet.getString(2),
+					LEVEL: oResultSet.getString(3),
+					ITEMNO_ACC: oResultSet.getString(4),
+					DATE: oResultSet.getString(5),
+					FUNCTION: oResultSet.getString(6),
+					PARAMETER1: oResultSet.getString(7),
+					PARAMETER2: oResultSet.getString(8),
+					PARAMETER3: oResultSet.getString(9),
+					PARAMETER4: oResultSet.getString(10),
+					PARAMETER5: oResultSet.getString(11),
+					RESULT: oResultSet.getString(12)
 				};
 				oResult.records.push(record);
 				record = "";
@@ -173,7 +247,7 @@
 
 			//Build the Statement to insert the entries
 			var oStatement = oConnection.prepareStatement('INSERT INTO "' + gvSchemaName + '"."' + gvTableName +
-				'" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
+				'" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
 
 			for (var i = 0; i < oBody.rules.length; i++) {
 
@@ -207,6 +281,8 @@
 				// oStatement.setString(9, oBody.rules[i].RESULT);
 				//Rule String
 				oStatement.setString(9, oBody.rules[i].RULE_STRING);
+				//Full Rule String
+				oStatement.setString(10, oBody.rules[i].FULL_RULE_STRING);
 
 				//Add Batch process to executed on the database
 				oStatement.addBatch();
@@ -363,10 +439,10 @@
 		}
 		//Nested Functions
 		else {
-            lvFunctionIndex = gvRule.indexOf("(");
+			lvFunctionIndex = gvRule.indexOf("(");
 			lvFunction = gvRule.substring(0, lvFunctionIndex);
 			lvTotalLength = gvRule.length;
-			
+
 			var oNestedFunctions = _buildFunctionlist(lvTotalLength, lvFunction);
 
 			for (var i = 0; i < oNestedFunctions.length; i++) {
@@ -421,7 +497,8 @@
 						FUNCTION: pFunction,
 						PARAMETER1: oParameters[0],
 						PARAMETER2: oParameters[1],
-						RULE_STRING: pRule
+						RULE_STRING: pRule,
+						FULL_RULE_STRING: gvRule
 					};
 
 				}
@@ -439,7 +516,8 @@
 						FUNCTION: pFunction,
 						PARAMETER1: oParameters[0],
 						PARAMETER2: oParameters[1],
-						RULE_STRING: pRule
+						RULE_STRING: pRule,
+						FULL_RULE_STRING: gvRule
 					};
 
 				}
@@ -458,7 +536,8 @@
 						PARAMETER1: oParameters[0],
 						PARAMETER2: oParameters[1],
 						PARAMETER3: oParameters[2],
-						RULE_STRING: gvRule
+						RULE_STRING: gvRule,
+						FULL_RULE_STRING: gvRule
 					};
 
 				}
@@ -479,7 +558,8 @@
 						PARAMETER3: oParameters[2],
 						PARAMETER4: oParameters[3],
 						PARAMETER5: oParameters[4],
-						RULE_STRING: pRule
+						RULE_STRING: pRule,
+						FULL_RULE_STRING: gvRule
 					};
 
 				}
@@ -497,7 +577,28 @@
 						FUNCTION: pFunction,
 						PARAMETER1: oParameters[0],
 						PARAMETER2: oParameters[1],
-						RULE_STRING: pRule
+						RULE_STRING: pRule,
+						FULL_RULE_STRING: gvRule
+					};
+
+				}
+				break;
+			case "IF":
+				if (oParameters.length < 1 || oParameters.length > 3 || oParameters.length != 3) {
+					gvErrorMessage = "IF Function can only hold 3 parameters";
+					lvReturn = "ERROR";
+				} else {
+					lvReturn = "VALID";
+
+					lvRule = {
+						ID: "",
+						LEVEL: "",
+						FUNCTION: pFunction,
+						PARAMETER1: oParameters[0],
+						PARAMETER2: oParameters[1],
+						PARAMETER3: oParameters[2],
+						RULE_STRING: gvRule,
+						FULL_RULE_STRING: gvRule
 					};
 
 				}
